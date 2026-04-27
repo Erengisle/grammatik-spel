@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Substantivspelet</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f0f4ff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 16px 40px;
+    }
+
+    /* ── Namnskärm ─────────────────────────────────────────────────────── */
+    #nameCard {
+      background: white;
+      border-radius: 24px;
+      width: 100%;
+      max-width: 440px;
+      padding: 40px 32px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.10);
+      text-align: center;
+      margin-top: 60px;
+    }
+    #nameCard h1 { font-size: 2rem; font-weight: 800; color: #1e293b; margin-bottom: 6px; }
+    #nameCard p  { color: #64748b; margin-bottom: 28px; font-size: 1rem; }
+
+    .name-input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      margin-bottom: 12px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .name-input:focus { border-color: #6366f1; }
+
+    .btn-primary {
+      width: 100%;
+      padding: 14px;
+      background: #6366f1;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-primary:hover { background: #4f46e5; }
+    .btn-primary:disabled { background: #c7d2fe; cursor: default; }
+
+    /* ── Spelskärm ─────────────────────────────────────────────────────── */
+    #gameScreen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 440px;
+    }
+
+    /* Topbar */
+    .topbar {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 12px;
+    }
+    .stat-box { text-align: center; }
+    .stat-box:last-child { text-align: right; }
+    .stat-label { font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; }
+    .stat-val   { font-size: 1.6rem; font-weight: 800; color: #1e293b; line-height: 1.1; }
+
+    .streak-box {
+      background: #fff7ed;
+      border-radius: 999px;
+      padding: 6px 16px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #ea580c;
+      white-space: nowrap;
+    }
+
+    /* Progressbar */
+    .progress-wrap {
+      width: 100%;
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6366f1, #8b5cf6);
+      border-radius: 4px;
+      transition: width 0.35s ease;
+      width: 0%;
+    }
+
+    /* Spelkort */
+    .game-card {
+      background: white;
+      border-radius: 24px;
+      width: 100%;
+      padding: 36px 28px 28px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.10);
+      text-align: center;
+    }
+
+    .hint-text {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-bottom: 16px;
+      letter-spacing: 0.02em;
+    }
+
+    .noun-display {
+      font-size: 3rem;
+      font-weight: 800;
+      color: #1e293b;
+      min-height: 3.6rem;
+      margin-bottom: 8px;
+      transition: color 0.2s;
+    }
+    .noun-display.correct { color: #16a34a; }
+    .noun-display.wrong   { color: #dc2626; }
+
+    .feedback {
+      font-size: 0.95rem;
+      font-weight: 600;
+      height: 1.4rem;
+      margin-bottom: 24px;
+      transition: opacity 0.2s;
+    }
+    .feedback.correct { color: #16a34a; }
+    .feedback.wrong   { color: #dc2626; }
+
+    .answer-btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .btn-en, .btn-ett {
+      padding: 22px 8px;
+      border: none;
+      border-radius: 16px;
+      font-size: 1.6rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.1s, filter 0.1s;
+      letter-spacing: 0.02em;
+    }
+    .btn-en  { background: #dbeafe; color: #1d4ed8; }
+    .btn-ett { background: #fef3c7; color: #b45309; }
+    .btn-en:hover:not(:disabled)  { filter: brightness(0.94); transform: scale(1.03); }
+    .btn-ett:hover:not(:disabled) { filter: brightness(0.94); transform: scale(1.03); }
+    .btn-en:disabled, .btn-ett:disabled { opacity: 0.45; cursor: default; transform: none; }
+
+    /* ── Summering ─────────────────────────────────────────────────────── */
+    .summary {
+      display: none;
+      text-align: center;
+      padding-top: 8px;
+    }
+    .summary-emoji { font-size: 3rem; }
+    .summary h2    { font-size: 1.5rem; font-weight: 700; color: #1e293b; margin: 8px 0 4px; }
+    .big-score     { font-size: 4.5rem; font-weight: 900; color: #6366f1; line-height: 1; }
+    .big-score-label { font-size: 0.9rem; color: #94a3b8; margin-bottom: 12px; }
+    .summary-detail  { color: #374151; font-size: 1rem; margin-bottom: 20px; }
+
+    .btn-restart {
+      width: 100%;
+      padding: 14px;
+      background: #6366f1;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-restart:hover { background: #4f46e5; }
+
+    /* ── Laddning / Fel ────────────────────────────────────────────────── */
+    .state-msg {
+      color: #64748b;
+      font-size: 1rem;
+      margin: 24px 0;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Namnskärm -->
+  <div id="nameCard">
+    <h1>🇸🇪 Substantivspelet</h1>
+    <p>Öva på <em>en</em> och <em>ett</em></p>
+    <input id="nameInput" class="name-input" placeholder="Ditt namn" maxlength="30" />
+    <button class="btn-primary" id="startBtn" onclick="startGame()">Starta spelet</button>
+  </div>
+
+  <!-- Spelskärm -->
+  <div id="gameScreen">
+    <div class="topbar">
+      <div class="stat-box">
+        <div class="stat-label">Poäng</div>
+        <div class="stat-val" id="scoreVal">0</div>
+      </div>
+      <div class="streak-box" id="streakBox">🔥 0</div>
+      <div class="stat-box">
+        <div class="stat-label">Rätt</div>
+        <div class="stat-val" id="correctVal">0/10</div>
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="game-card">
+      <div class="hint-text" id="hintText">Vilken artikel hör till ordet?</div>
+      <div class="noun-display" id="nounDisplay">…</div>
+      <div class="feedback"    id="feedback"></div>
+
+      <div class="answer-btns" id="answerBtns">
+        <button class="btn-en"  onclick="answer('en')" >en</button>
+        <button class="btn-ett" onclick="answer('ett')">ett</button>
+      </div>
+
+      <!-- Summering visas inuti samma kort -->
+      <div class="summary" id="summaryCard">
+        <div class="summary-emoji" id="summaryEmoji">🎉</div>
+        <h2 id="summaryTitle">Bra jobbat!</h2>
+        <div class="big-score"       id="finalScore">0</div>
+        <div class="big-score-label">poäng</div>
+        <div class="summary-detail"  id="summaryDetail"></div>
+        <button class="btn-restart" onclick="restartGame()">Spela igen ↩</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const RUNDA  = 10;   // antal ord per runda
+    const BONUS_TRÖSKEL = 3; // streak-längd innan bonuspoäng börjar
+    const POÄNG_RÄTT    = 10;
+    const POÄNG_BONUS   = 5; // extra per streak-steg över tröskeln
+
+    let allWords   = [];
+    let roundWords = [];
+    let current    = 0;
+    let score      = 0;
+    let streak     = 0;
+    let correct    = 0;
+    let answered   = false;
+    let studentName = '';
+
+    // ── Spelstart ──────────────────────────────────────────────────────────
+
+    function startGame() {
+      const nameEl = document.getElementById('nameInput');
+      studentName = nameEl.value.trim();
+      if (!studentName) { nameEl.focus(); return; }
+      localStorage.setItem('sbSpelNamn', studentName);
+
+      document.getElementById('nameCard').style.display   = 'none';
+      document.getElementById('gameScreen').style.display = 'flex';
+      document.getElementById('startBtn').disabled        = true;
+
+      visaLaddning();
+      google.script.run
+        .withSuccessHandler(onOrdLaddade)
+        .withFailureHandler(onFel)
+        .hamtaSpelOrd();
+    }
+
+    function visaLaddning() {
+      document.getElementById('nounDisplay').textContent = '⏳';
+      document.getElementById('hintText').textContent   = 'Laddar ord…';
+      document.getElementById('answerBtns').style.visibility = 'hidden';
+    }
+
+    function onOrdLaddade(data) {
+      if (!data || data.length === 0) {
+        document.getElementById('nounDisplay').textContent = 'Inga ord klara ännu.';
+        document.getElementById('hintText').textContent    =
+          'Fyll i genus i Ordlistan eller kör "Berika med genus via SALDO".';
+        return;
+      }
+      allWords = data;
+      borjaRunda();
+    }
+
+    function onFel(err) {
+      document.getElementById('nounDisplay').textContent = '⚠️ ' + (err.message || 'okänt fel');
+    }
+
+    // ── Runda ──────────────────────────────────────────────────────────────
+
+    function borjaRunda() {
+      current  = 0;
+      score    = 0;
+      streak   = 0;
+      correct  = 0;
+      answered = false;
+
+      roundWords = blanda(allWords).slice(0, RUNDA);
+
+      document.getElementById('summaryCard').style.display  = 'none';
+      document.getElementById('answerBtns').style.visibility = 'visible';
+      document.getElementById('hintText').textContent       = 'Vilken artikel hör till ordet?';
+
+      uppdateraUI();
+      visaNästaOrd();
+    }
+
+    function visaNästaOrd() {
+      answered = false;
+      const w  = roundWords[current];
+
+      const el  = document.getElementById('nounDisplay');
+      el.textContent = w.ord;
+      el.className   = 'noun-display';
+
+      const fb = document.getElementById('feedback');
+      fb.textContent = '';
+      fb.className   = 'feedback';
+
+      document.querySelectorAll('.answer-btns button')
+        .forEach(function(b) { b.disabled = false; });
+    }
+
+    function answer(val) {
+      if (answered) return;
+      answered = true;
+
+      const w      = roundWords[current];
+      const rätt   = w.genus;
+      const isRight = val === rätt;
+
+      const nounEl = document.getElementById('nounDisplay');
+      const fbEl   = document.getElementById('feedback');
+
+      if (isRight) {
+        correct++;
+        streak++;
+        const bonus = streak > BONUS_TRÖSKEL ? (streak - BONUS_TRÖSKEL) * POÄNG_BONUS : 0;
+        score += POÄNG_RÄTT + bonus;
+
+        nounEl.className = 'noun-display correct';
+        fbEl.textContent = streak >= BONUS_TRÖSKEL
+          ? '✓  ' + streak + '-streak! 🔥 +' + (POÄNG_RÄTT + bonus)
+          : '✓  Rätt!';
+        fbEl.className   = 'feedback correct';
+      } else {
+        streak = 0;
+        nounEl.className  = 'noun-display wrong';
+        fbEl.textContent  = '✗  Det är ' + rätt + ' ' + w.ord;
+        fbEl.className    = 'feedback wrong';
+      }
+
+      document.querySelectorAll('.answer-btns button')
+        .forEach(function(b) { b.disabled = true; });
+
+      uppdateraUI();
+
+      current++;
+      if (current >= roundWords.length) {
+        setTimeout(visaSummering, 1100);
+      } else {
+        setTimeout(visaNästaOrd, 900);
+      }
+    }
+
+    function uppdateraUI() {
+      document.getElementById('scoreVal').textContent   = score;
+      document.getElementById('streakBox').textContent  = '🔥 ' + streak;
+      document.getElementById('correctVal').textContent = correct + '/' + RUNDA;
+      document.getElementById('progressFill').style.width =
+        (current / RUNDA * 100) + '%';
+    }
+
+    // ── Summering ──────────────────────────────────────────────────────────
+
+    function visaSummering() {
+      const pct    = Math.round(correct / RUNDA * 100);
+      const perfekt = correct === RUNDA;
+
+      document.getElementById('summaryEmoji').textContent  = perfekt ? '🏆' : '🎉';
+      document.getElementById('summaryTitle').textContent  = perfekt ? 'Perfekt runda!' : 'Bra jobbat!';
+      document.getElementById('finalScore').textContent    = score;
+      document.getElementById('summaryDetail').textContent =
+        correct + ' av ' + RUNDA + ' rätt (' + pct + '%)';
+
+      document.getElementById('progressFill').style.width = '100%';
+      document.getElementById('answerBtns').style.display  = 'none';
+      document.getElementById('hintText').style.display    = 'none';
+      document.getElementById('nounDisplay').style.display = 'none';
+      document.getElementById('feedback').style.display    = 'none';
+      document.getElementById('summaryCard').style.display = 'block';
+
+      google.script.run.sparaPoang({
+        student: studentName,
+        score:   score,
+        correct: correct,
+        total:   RUNDA
+      });
+    }
+
+    function restartGame() {
+      document.getElementById('answerBtns').style.display  = '';
+      document.getElementById('hintText').style.display    = '';
+      document.getElementById('nounDisplay').style.display = '';
+      document.getElementById('feedback').style.display    = '';
+      borjaRunda();
+    }
+
+    // ── Hjälp ──────────────────────────────────────────────────────────────
+
+    function blanda(arr) {
+      var a = arr.slice();
+      for (var i = a.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+      }
+      return a;
+    }
+
+    // Fyll i sparat namn
+    window.addEventListener('load', function() {
+      var saved = localStorage.getItem('sbSpelNamn');
+      if (saved) document.getElementById('nameInput').value = saved;
+    });
+
+    // Enter på namnfältet startar spelet
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('nameInput').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') startGame();
+      });
+    });
+  </script>
+</body>
+</html>
