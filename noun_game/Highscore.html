@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Highscore — Substantivspelet</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f0f4ff;
+      min-height: 100vh;
+      padding: 24px 16px 48px;
+    }
+
+    .page-wrap {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    header h1 { font-size: 1.7rem; font-weight: 800; color: #1e293b; }
+    header p  { font-size: 0.9rem; color: #64748b; }
+
+    .back-link {
+      font-size: 0.85rem;
+      color: #6366f1;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .back-link:hover { text-decoration: underline; }
+
+    .refresh-btn {
+      padding: 8px 18px;
+      background: #6366f1;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .refresh-btn:hover { background: #4f46e5; }
+    .refresh-btn:disabled { background: #c7d2fe; cursor: default; }
+
+    /* ── Grid layout ────────────────────────────────────────────────── */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+
+    /* ── Kort ───────────────────────────────────────────────────────── */
+    .card {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .card-header h2 { font-size: 1rem; font-weight: 700; color: #1e293b; }
+    .card-header p  { font-size: 0.78rem; color: #94a3b8; margin-top: 2px; }
+
+    /* ── Tabell ─────────────────────────────────────────────────────── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    thead th {
+      padding: 10px 16px;
+      text-align: left;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: #f8fafc;
+    }
+    thead th.num { text-align: right; }
+    tbody tr { border-top: 1px solid #f1f5f9; transition: background 0.1s; }
+    tbody tr:hover { background: #f8fafc; }
+    tbody td { padding: 10px 16px; color: #374151; vertical-align: middle; }
+    tbody td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    tbody td.rank { font-weight: 800; color: #6366f1; width: 32px; }
+
+    /* Medaljer för topp 3 */
+    tr:nth-child(1) td.rank { color: #d97706; }
+    tr:nth-child(2) td.rank { color: #64748b; }
+    tr:nth-child(3) td.rank { color: #b45309; }
+
+    .pct-bar-wrap { display: flex; align-items: center; gap: 8px; }
+    .pct-bar-bg { flex: 1; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; min-width: 40px; }
+    .pct-bar-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #8b5cf6); border-radius: 3px; }
+    .pct-label { font-size: 0.8rem; color: #64748b; white-space: nowrap; }
+
+    /* ── Laddning / tomt ────────────────────────────────────────────── */
+    .state-msg {
+      padding: 32px 20px;
+      text-align: center;
+      color: #94a3b8;
+      font-size: 0.95rem;
+    }
+
+    /* ── Timestamp ──────────────────────────────────────────────────── */
+    .ts { font-size: 0.78rem; color: #94a3b8; }
+  </style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <header>
+    <div>
+      <h1>&#x1F3C6; Highscore</h1>
+      <p id="lastUpdated">Laddar…</p>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center">
+      <button class="refresh-btn" id="refreshBtn" onclick="ladda()">&#x21BB; Uppdatera</button>
+      <a class="back-link" href="." target="_top">&#x2190; Till spelet</a>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- Topplistan -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Topplista — totala poäng</h2>
+        <p>Kumulativa poäng per elev (alla omgångar)</p>
+      </div>
+      <div id="leaderboardWrap">
+        <div class="state-msg">Laddar…</div>
+      </div>
+    </div>
+
+    <!-- Senaste omgångar -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Senaste omgångar</h2>
+        <p>De 20 senaste inspelade resultaten</p>
+      </div>
+      <div id="recentWrap">
+        <div class="state-msg">Laddar…</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function ladda() {
+    document.getElementById('refreshBtn').disabled = true;
+    document.getElementById('lastUpdated').textContent = 'Laddar…';
+    document.getElementById('leaderboardWrap').innerHTML = '<div class="state-msg">Laddar…</div>';
+    document.getElementById('recentWrap').innerHTML      = '<div class="state-msg">Laddar…</div>';
+
+    google.script.run
+      .withSuccessHandler(visaData)
+      .withFailureHandler(visaFel)
+      .hamtaHighscore();
+  }
+
+  function visaData(data) {
+    document.getElementById('refreshBtn').disabled = false;
+    document.getElementById('lastUpdated').textContent =
+      'Uppdaterad ' + new Date().toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+
+    // ── Topplista ────────────────────────────────────────────────────
+    var lbWrap = document.getElementById('leaderboardWrap');
+    if (!data.leaderboard || data.leaderboard.length === 0) {
+      lbWrap.innerHTML = '<div class="state-msg">Inga resultat ännu.</div>';
+    } else {
+      var medals = ['&#x1F947;', '&#x1F948;', '&#x1F949;'];
+      var rows   = data.leaderboard.map(function(r, i) {
+        var pct = r.totalTotal > 0 ? Math.round(r.totalCorrect / r.totalTotal * 100) : 0;
+        var rank = i < 3 ? medals[i] : (i + 1);
+        return '<tr>' +
+          '<td class="rank">' + rank + '</td>' +
+          '<td><strong>' + esc(r.student) + '</strong></td>' +
+          '<td class="num"><strong>' + r.totalScore + '</strong></td>' +
+          '<td class="num">' +
+            '<div class="pct-bar-wrap">' +
+              '<div class="pct-bar-bg"><div class="pct-bar-fill" style="width:' + pct + '%"></div></div>' +
+              '<span class="pct-label">' + pct + '%</span>' +
+            '</div>' +
+          '</td>' +
+          '<td class="num">' + r.games + '</td>' +
+        '</tr>';
+      }).join('');
+
+      lbWrap.innerHTML =
+        '<table>' +
+          '<thead><tr>' +
+            '<th>#</th>' +
+            '<th>Elev</th>' +
+            '<th class="num">Poäng</th>' +
+            '<th class="num">Träffsäkerhet</th>' +
+            '<th class="num">Omg.</th>' +
+          '</tr></thead>' +
+          '<tbody>' + rows + '</tbody>' +
+        '</table>';
+    }
+
+    // ── Senaste omgångar ─────────────────────────────────────────────
+    var recWrap = document.getElementById('recentWrap');
+    if (!data.recentGames || data.recentGames.length === 0) {
+      recWrap.innerHTML = '<div class="state-msg">Inga omgångar ännu.</div>';
+    } else {
+      var rows2 = data.recentGames.map(function(r) {
+        var pct = r.total > 0 ? Math.round(r.correct / r.total * 100) : 0;
+        return '<tr>' +
+          '<td><strong>' + esc(r.student) + '</strong><br><span class="ts">' + esc(r.timestamp) + '</span></td>' +
+          '<td class="num"><strong>' + r.score + '</strong></td>' +
+          '<td class="num">' + r.correct + '/' + r.total + '</td>' +
+          '<td class="num">' +
+            '<div class="pct-bar-wrap">' +
+              '<div class="pct-bar-bg"><div class="pct-bar-fill" style="width:' + pct + '%"></div></div>' +
+              '<span class="pct-label">' + pct + '%</span>' +
+            '</div>' +
+          '</td>' +
+        '</tr>';
+      }).join('');
+
+      recWrap.innerHTML =
+        '<table>' +
+          '<thead><tr>' +
+            '<th>Elev</th>' +
+            '<th class="num">Poäng</th>' +
+            '<th class="num">Rätt</th>' +
+            '<th class="num">Träffsäkerhet</th>' +
+          '</tr></thead>' +
+          '<tbody>' + rows2 + '</tbody>' +
+        '</table>';
+    }
+  }
+
+  function visaFel(err) {
+    document.getElementById('refreshBtn').disabled = false;
+    var msg = '<div class="state-msg">&#x26A0;&#xFE0F; ' + ((err && err.message) || 'Okänt fel') + '</div>';
+    document.getElementById('leaderboardWrap').innerHTML = msg;
+    document.getElementById('recentWrap').innerHTML      = msg;
+    document.getElementById('lastUpdated').textContent   = 'Fel vid laddning';
+  }
+
+  function esc(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  window.addEventListener('load', ladda);
+</script>
+</body>
+</html>

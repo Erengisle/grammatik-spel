@@ -17,19 +17,19 @@
       padding: 20px 16px 40px;
     }
 
-    /* ── Namnskärm ─────────────────────────────────────────────────────── */
+    /* ── Namnskärm ───────────────────────────────────────────────────── */
     #nameCard {
       background: white;
       border-radius: 24px;
       width: 100%;
       max-width: 440px;
-      padding: 40px 32px;
+      padding: 36px 32px;
       box-shadow: 0 12px 40px rgba(0,0,0,0.10);
       text-align: center;
-      margin-top: 60px;
+      margin-top: 48px;
     }
-    #nameCard h1 { font-size: 2rem; font-weight: 800; color: #1e293b; margin-bottom: 6px; }
-    #nameCard p  { color: #64748b; margin-bottom: 28px; font-size: 1rem; }
+    #nameCard h1 { font-size: 2rem; font-weight: 800; color: #1e293b; margin-bottom: 4px; }
+    #nameCard > p { color: #64748b; margin-bottom: 24px; font-size: 1rem; }
 
     .name-input {
       width: 100%;
@@ -37,11 +37,68 @@
       border: 2px solid #e2e8f0;
       border-radius: 12px;
       font-size: 1.1rem;
-      margin-bottom: 12px;
+      margin-bottom: 20px;
       outline: none;
       transition: border-color 0.2s;
     }
     .name-input:focus { border-color: #6366f1; }
+
+    /* Mode toggle */
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+      text-align: left;
+    }
+    .mode-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .mode-btn {
+      padding: 12px 8px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      background: white;
+      color: #64748b;
+      transition: all 0.15s;
+    }
+    .mode-btn.active {
+      border-color: #6366f1;
+      background: #eef2ff;
+      color: #4338ca;
+    }
+
+    /* CEFR filter */
+    .cefr-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .cefr-btn {
+      padding: 6px 12px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      background: white;
+      color: #64748b;
+      transition: all 0.15s;
+    }
+    .cefr-btn.active {
+      border-color: #6366f1;
+      background: #eef2ff;
+      color: #4338ca;
+    }
 
     .btn-primary {
       width: 100%;
@@ -54,11 +111,21 @@
       font-weight: 700;
       cursor: pointer;
       transition: background 0.15s;
+      margin-bottom: 16px;
     }
-    .btn-primary:hover { background: #4f46e5; }
+    .btn-primary:hover  { background: #4f46e5; }
     .btn-primary:disabled { background: #c7d2fe; cursor: default; }
 
-    /* ── Spelskärm ─────────────────────────────────────────────────────── */
+    .teacher-link {
+      display: block;
+      font-size: 0.82rem;
+      color: #94a3b8;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .teacher-link:hover { color: #6366f1; }
+
+    /* ── Spelskärm ───────────────────────────────────────────────────── */
     #gameScreen {
       display: none;
       flex-direction: column;
@@ -67,7 +134,6 @@
       max-width: 440px;
     }
 
-    /* Topbar */
     .topbar {
       display: grid;
       grid-template-columns: 1fr auto 1fr;
@@ -79,7 +145,6 @@
     .stat-box:last-child { text-align: right; }
     .stat-label { font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; }
     .stat-val   { font-size: 1.6rem; font-weight: 800; color: #1e293b; line-height: 1.1; }
-
     .streak-box {
       background: #fff7ed;
       border-radius: 999px;
@@ -90,7 +155,6 @@
       white-space: nowrap;
     }
 
-    /* Progressbar */
     .progress-wrap {
       width: 100%;
       height: 8px;
@@ -107,7 +171,6 @@
       width: 0%;
     }
 
-    /* Spelkort */
     .game-card {
       background: white;
       border-radius: 24px;
@@ -145,12 +208,12 @@
     .feedback.correct { color: #16a34a; }
     .feedback.wrong   { color: #dc2626; }
 
+    /* Genus-knappar */
     .answer-btns {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
     }
-
     .btn-en, .btn-ett {
       padding: 22px 8px;
       border: none;
@@ -159,7 +222,6 @@
       font-weight: 800;
       cursor: pointer;
       transition: transform 0.1s, filter 0.1s;
-      letter-spacing: 0.02em;
     }
     .btn-en  { background: #dbeafe; color: #1d4ed8; }
     .btn-ett { background: #fef3c7; color: #b45309; }
@@ -167,18 +229,47 @@
     .btn-ett:hover:not(:disabled) { filter: brightness(0.94); transform: scale(1.03); }
     .btn-en:disabled, .btn-ett:disabled { opacity: 0.45; cursor: default; transform: none; }
 
-    /* ── Summering ─────────────────────────────────────────────────────── */
-    .summary {
-      display: none;
-      text-align: center;
-      padding-top: 8px;
+    /* Plural-input */
+    .plural-wrap {
+      display: flex;
+      gap: 8px;
     }
+    .plural-input {
+      flex: 1;
+      padding: 16px 14px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #1e293b;
+      outline: none;
+      transition: border-color 0.2s;
+      text-align: center;
+    }
+    .plural-input:focus { border-color: #6366f1; }
+    .plural-input:disabled { background: #f8fafc; color: #94a3b8; }
+    .btn-submit {
+      padding: 16px 20px;
+      background: #6366f1;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .btn-submit:hover:not(:disabled) { background: #4f46e5; }
+    .btn-submit:disabled { background: #c7d2fe; cursor: default; }
+
+    /* ── Summering ───────────────────────────────────────────────────── */
+    .summary { display: none; text-align: center; padding-top: 8px; }
     .summary-emoji { font-size: 3rem; }
     .summary h2    { font-size: 1.5rem; font-weight: 700; color: #1e293b; margin: 8px 0 4px; }
-    .big-score     { font-size: 4.5rem; font-weight: 900; color: #6366f1; line-height: 1; }
+    .big-score       { font-size: 4.5rem; font-weight: 900; color: #6366f1; line-height: 1; }
     .big-score-label { font-size: 0.9rem; color: #94a3b8; margin-bottom: 12px; }
     .summary-detail  { color: #374151; font-size: 1rem; margin-bottom: 20px; }
-
     .btn-restart {
       width: 100%;
       padding: 14px;
@@ -192,24 +283,35 @@
       transition: background 0.15s;
     }
     .btn-restart:hover { background: #4f46e5; }
-
-    /* ── Laddning / Fel ────────────────────────────────────────────────── */
-    .state-msg {
-      color: #64748b;
-      font-size: 1rem;
-      margin: 24px 0;
-      text-align: center;
-    }
   </style>
 </head>
 <body>
 
   <!-- Namnskärm -->
   <div id="nameCard">
-    <h1>🇸🇪 Substantivspelet</h1>
-    <p>Öva på <em>en</em> och <em>ett</em></p>
+    <h1>&#x1F1F8;&#x1F1EA; Substantivspelet</h1>
+    <p>Öva på svenska substantiv</p>
+
     <input id="nameInput" class="name-input" placeholder="Ditt namn" maxlength="30" />
+
+    <div class="section-label">Spelmod</div>
+    <div class="mode-row">
+      <button class="mode-btn active" id="modeGenus"  onclick="setMode('genus')">en / ett</button>
+      <button class="mode-btn"        id="modePlural" onclick="setMode('plural')">Plural</button>
+    </div>
+
+    <div class="section-label">Svårighetsgrad (CEFR)</div>
+    <div class="cefr-row">
+      <button class="cefr-btn active" onclick="setCefr(this, '')">Alla</button>
+      <button class="cefr-btn" onclick="setCefr(this, 'A1')">A1</button>
+      <button class="cefr-btn" onclick="setCefr(this, 'A2')">A2</button>
+      <button class="cefr-btn" onclick="setCefr(this, 'B1')">B1</button>
+      <button class="cefr-btn" onclick="setCefr(this, 'B2')">B2</button>
+      <button class="cefr-btn" onclick="setCefr(this, 'C1')">C1</button>
+    </div>
+
     <button class="btn-primary" id="startBtn" onclick="startGame()">Starta spelet</button>
+    <a class="teacher-link" id="highscoreLink" href="?page=highscore" target="_blank">Lärarvy / Highscore ↗</a>
   </div>
 
   <!-- Spelskärm -->
@@ -219,7 +321,7 @@
         <div class="stat-label">Poäng</div>
         <div class="stat-val" id="scoreVal">0</div>
       </div>
-      <div class="streak-box" id="streakBox">🔥 0</div>
+      <div class="streak-box" id="streakBox">&#x1F525; 0</div>
       <div class="stat-box">
         <div class="stat-label">Rätt</div>
         <div class="stat-val" id="correctVal">0/10</div>
@@ -231,47 +333,70 @@
     </div>
 
     <div class="game-card">
-      <div class="hint-text" id="hintText">Vilken artikel hör till ordet?</div>
-      <div class="noun-display" id="nounDisplay">…</div>
-      <div class="feedback"    id="feedback"></div>
+      <div class="hint-text"   id="hintText">Vilken artikel hör till ordet?</div>
+      <div class="noun-display" id="nounDisplay">&#x23F3;</div>
+      <div class="feedback"     id="feedback"></div>
 
-      <div class="answer-btns" id="answerBtns">
+      <!-- Genus-knappar -->
+      <div class="answer-btns" id="genusBtns">
         <button class="btn-en"  onclick="answer('en')" >en</button>
         <button class="btn-ett" onclick="answer('ett')">ett</button>
       </div>
 
-      <!-- Summering visas inuti samma kort -->
+      <!-- Plural-inmatning -->
+      <div class="plural-wrap" id="pluralWrap" style="display:none">
+        <input id="pluralInput" class="plural-input" placeholder="skriv plural…" autocomplete="off" autocorrect="off" spellcheck="false" />
+        <button class="btn-submit" id="pluralSubmit" onclick="checkPlural()">&#x21A9;</button>
+      </div>
+
+      <!-- Summering inuti kortet -->
       <div class="summary" id="summaryCard">
-        <div class="summary-emoji" id="summaryEmoji">🎉</div>
+        <div class="summary-emoji" id="summaryEmoji">&#x1F389;</div>
         <h2 id="summaryTitle">Bra jobbat!</h2>
         <div class="big-score"       id="finalScore">0</div>
         <div class="big-score-label">poäng</div>
         <div class="summary-detail"  id="summaryDetail"></div>
-        <button class="btn-restart" onclick="restartGame()">Spela igen ↩</button>
+        <button class="btn-restart" onclick="restartGame()">Spela igen &#x21A9;</button>
       </div>
     </div>
   </div>
 
   <script>
-    const RUNDA  = 10;   // antal ord per runda
-    const BONUS_TRÖSKEL = 3; // streak-längd innan bonuspoäng börjar
+    const RUNDA         = 10;
+    const BONUS_TRÖSKEL = 3;
     const POÄNG_RÄTT    = 10;
-    const POÄNG_BONUS   = 5; // extra per streak-steg över tröskeln
+    const POÄNG_BONUS   = 5;
 
-    let allWords   = [];
-    let roundWords = [];
-    let current    = 0;
-    let score      = 0;
-    let streak     = 0;
-    let correct    = 0;
-    let answered   = false;
+    let allWords    = [];
+    let roundWords  = [];
+    let current     = 0;
+    let score       = 0;
+    let streak      = 0;
+    let correct     = 0;
+    let answered    = false;
     let studentName = '';
+    let spelmod     = 'genus';   // 'genus' | 'plural'
+    let cefrFilter  = '';
 
-    // ── Spelstart ──────────────────────────────────────────────────────────
+    // ── Inställningar ─────────────────────────────────────────────────
+
+    function setMode(m) {
+      spelmod = m;
+      document.getElementById('modeGenus').classList.toggle('active',  m === 'genus');
+      document.getElementById('modePlural').classList.toggle('active', m === 'plural');
+    }
+
+    function setCefr(btn, val) {
+      cefrFilter = val;
+      document.querySelectorAll('.cefr-btn').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+    }
+
+    // ── Spelstart ──────────────────────────────────────────────────────
 
     function startGame() {
       const nameEl = document.getElementById('nameInput');
-      studentName = nameEl.value.trim();
+      studentName  = nameEl.value.trim();
       if (!studentName) { nameEl.focus(); return; }
       localStorage.setItem('sbSpelNamn', studentName);
 
@@ -280,23 +405,35 @@
       document.getElementById('startBtn').disabled        = true;
 
       visaLaddning();
-      google.script.run
-        .withSuccessHandler(onOrdLaddade)
-        .withFailureHandler(onFel)
-        .hamtaSpelOrd();
+      const opts = { cefr: cefrFilter };
+
+      if (spelmod === 'plural') {
+        google.script.run
+          .withSuccessHandler(onOrdLaddade)
+          .withFailureHandler(onFel)
+          .hamtaSpelOrdPlural(opts);
+      } else {
+        google.script.run
+          .withSuccessHandler(onOrdLaddade)
+          .withFailureHandler(onFel)
+          .hamtaSpelOrd(opts);
+      }
     }
 
     function visaLaddning() {
       document.getElementById('nounDisplay').textContent = '⏳';
-      document.getElementById('hintText').textContent   = 'Laddar ord…';
-      document.getElementById('answerBtns').style.visibility = 'hidden';
+      document.getElementById('hintText').textContent    = 'Laddar ord…';
+      document.getElementById('genusBtns').style.visibility  = 'hidden';
+      document.getElementById('pluralWrap').style.display    = 'none';
     }
 
     function onOrdLaddade(data) {
       if (!data || data.length === 0) {
-        document.getElementById('nounDisplay').textContent = 'Inga ord klara ännu.';
-        document.getElementById('hintText').textContent    =
-          'Fyll i genus i Ordlistan eller kör "Berika med genus via SALDO".';
+        const msg = spelmod === 'plural'
+          ? 'Inga ord med plural klara ännu. Kör "Berika med plural via SALDO".'
+          : 'Inga ord klara ännu. Fyll i genus eller kör "Berika med genus via SALDO".';
+        document.getElementById('nounDisplay').textContent = 'Inga ord';
+        document.getElementById('hintText').textContent    = msg;
         return;
       }
       allWords = data;
@@ -307,7 +444,7 @@
       document.getElementById('nounDisplay').textContent = '⚠️ ' + (err.message || 'okänt fel');
     }
 
-    // ── Runda ──────────────────────────────────────────────────────────────
+    // ── Runda ──────────────────────────────────────────────────────────
 
     function borjaRunda() {
       current  = 0;
@@ -318,9 +455,22 @@
 
       roundWords = blanda(allWords).slice(0, RUNDA);
 
-      document.getElementById('summaryCard').style.display  = 'none';
-      document.getElementById('answerBtns').style.visibility = 'visible';
-      document.getElementById('hintText').textContent       = 'Vilken artikel hör till ordet?';
+      document.getElementById('summaryCard').style.display = 'none';
+      document.getElementById('hintText').style.display    = '';
+      document.getElementById('nounDisplay').style.display = '';
+      document.getElementById('feedback').style.display    = '';
+
+      if (spelmod === 'plural') {
+        document.getElementById('genusBtns').style.display   = 'none';
+        document.getElementById('genusBtns').style.visibility = '';
+        document.getElementById('pluralWrap').style.display  = 'flex';
+        document.getElementById('hintText').textContent      = 'Skriv pluralformen (obestämd)';
+      } else {
+        document.getElementById('genusBtns').style.display   = '';
+        document.getElementById('genusBtns').style.visibility = 'visible';
+        document.getElementById('pluralWrap').style.display  = 'none';
+        document.getElementById('hintText').textContent      = 'Vilken artikel hör till ordet?';
+      }
 
       uppdateraUI();
       visaNästaOrd();
@@ -330,7 +480,7 @@
       answered = false;
       const w  = roundWords[current];
 
-      const el  = document.getElementById('nounDisplay');
+      const el = document.getElementById('nounDisplay');
       el.textContent = w.ord;
       el.className   = 'noun-display';
 
@@ -338,18 +488,65 @@
       fb.textContent = '';
       fb.className   = 'feedback';
 
-      document.querySelectorAll('.answer-btns button')
-        .forEach(function(b) { b.disabled = false; });
+      if (spelmod === 'plural') {
+        const inp = document.getElementById('pluralInput');
+        inp.value    = '';
+        inp.disabled = false;
+        document.getElementById('pluralSubmit').disabled = false;
+        setTimeout(function() { inp.focus(); }, 50);
+      } else {
+        document.querySelectorAll('.answer-btns button')
+          .forEach(function(b) { b.disabled = false; });
+      }
     }
+
+    // ── Genus-svar ─────────────────────────────────────────────────────
 
     function answer(val) {
       if (answered) return;
       answered = true;
 
-      const w      = roundWords[current];
-      const rätt   = w.genus;
-      const isRight = val === rätt;
+      const w       = roundWords[current];
+      const isRight = val === w.genus;
 
+      registreraResultat(isRight, w.genus + ' ' + w.ord);
+      document.querySelectorAll('.answer-btns button').forEach(function(b) { b.disabled = true; });
+
+      current++;
+      if (current >= roundWords.length) {
+        setTimeout(visaSummering, 1100);
+      } else {
+        setTimeout(visaNästaOrd, 900);
+      }
+    }
+
+    // ── Plural-svar ────────────────────────────────────────────────────
+
+    function checkPlural() {
+      if (answered) return;
+      const w   = roundWords[current];
+      const inp = document.getElementById('pluralInput');
+      const val = inp.value.trim().toLowerCase();
+      if (!val) { inp.focus(); return; }
+
+      answered = true;
+      inp.disabled = true;
+      document.getElementById('pluralSubmit').disabled = true;
+
+      const isRight = val === w.plural.toLowerCase();
+      registreraResultat(isRight, w.plural);
+
+      current++;
+      if (current >= roundWords.length) {
+        setTimeout(visaSummering, 1300);
+      } else {
+        setTimeout(visaNästaOrd, 1100);
+      }
+    }
+
+    // ── Gemensam resultatregistrering ──────────────────────────────────
+
+    function registreraResultat(isRight, rättSvar) {
       const nounEl = document.getElementById('nounDisplay');
       const fbEl   = document.getElementById('feedback');
 
@@ -366,33 +563,22 @@
         fbEl.className   = 'feedback correct';
       } else {
         streak = 0;
-        nounEl.className  = 'noun-display wrong';
-        fbEl.textContent  = '✗  Det är ' + rätt + ' ' + w.ord;
-        fbEl.className    = 'feedback wrong';
+        nounEl.className = 'noun-display wrong';
+        fbEl.textContent = '✗  Rätt svar: ' + rättSvar;
+        fbEl.className   = 'feedback wrong';
       }
-
-      document.querySelectorAll('.answer-btns button')
-        .forEach(function(b) { b.disabled = true; });
 
       uppdateraUI();
-
-      current++;
-      if (current >= roundWords.length) {
-        setTimeout(visaSummering, 1100);
-      } else {
-        setTimeout(visaNästaOrd, 900);
-      }
     }
 
     function uppdateraUI() {
       document.getElementById('scoreVal').textContent   = score;
       document.getElementById('streakBox').textContent  = '🔥 ' + streak;
       document.getElementById('correctVal').textContent = correct + '/' + RUNDA;
-      document.getElementById('progressFill').style.width =
-        (current / RUNDA * 100) + '%';
+      document.getElementById('progressFill').style.width = (current / RUNDA * 100) + '%';
     }
 
-    // ── Summering ──────────────────────────────────────────────────────────
+    // ── Summering ──────────────────────────────────────────────────────
 
     function visaSummering() {
       const pct    = Math.round(correct / RUNDA * 100);
@@ -401,14 +587,14 @@
       document.getElementById('summaryEmoji').textContent  = perfekt ? '🏆' : '🎉';
       document.getElementById('summaryTitle').textContent  = perfekt ? 'Perfekt runda!' : 'Bra jobbat!';
       document.getElementById('finalScore').textContent    = score;
-      document.getElementById('summaryDetail').textContent =
-        correct + ' av ' + RUNDA + ' rätt (' + pct + '%)';
+      document.getElementById('summaryDetail').textContent = correct + ' av ' + RUNDA + ' rätt (' + pct + '%)';
+      document.getElementById('progressFill').style.width  = '100%';
 
-      document.getElementById('progressFill').style.width = '100%';
-      document.getElementById('answerBtns').style.display  = 'none';
-      document.getElementById('hintText').style.display    = 'none';
+      document.getElementById('genusBtns').style.display  = 'none';
+      document.getElementById('pluralWrap').style.display = 'none';
+      document.getElementById('hintText').style.display   = 'none';
       document.getElementById('nounDisplay').style.display = 'none';
-      document.getElementById('feedback').style.display    = 'none';
+      document.getElementById('feedback').style.display   = 'none';
       document.getElementById('summaryCard').style.display = 'block';
 
       google.script.run.sparaPoang({
@@ -420,34 +606,34 @@
     }
 
     function restartGame() {
-      document.getElementById('answerBtns').style.display  = '';
       document.getElementById('hintText').style.display    = '';
       document.getElementById('nounDisplay').style.display = '';
       document.getElementById('feedback').style.display    = '';
       borjaRunda();
     }
 
-    // ── Hjälp ──────────────────────────────────────────────────────────────
+    // ── Hjälp ──────────────────────────────────────────────────────────
 
     function blanda(arr) {
       var a = arr.slice();
       for (var i = a.length - 1; i > 0; i--) {
         var j = Math.floor(Math.random() * (i + 1));
-        var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+        var t = a[i]; a[i] = a[j]; a[j] = t;
       }
       return a;
     }
 
-    // Fyll i sparat namn
     window.addEventListener('load', function() {
       var saved = localStorage.getItem('sbSpelNamn');
       if (saved) document.getElementById('nameInput').value = saved;
     });
 
-    // Enter på namnfältet startar spelet
     document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('nameInput').addEventListener('keydown', function(e) {
         if (e.key === 'Enter') startGame();
+      });
+      document.getElementById('pluralInput').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') checkPlural();
       });
     });
   </script>
