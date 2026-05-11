@@ -285,8 +285,6 @@ function importeraFranOrdbank() {
 
 // ─── SALDO-berikning ───────────────────────────────────────────────────────────
 
-var SALDO_WS = 'https://spraakbanken.gu.se/ws/saldo-ws';
-
 /**
  * Visar råsvaret från SALDO för ett enskilt ord — för felsökning.
  */
