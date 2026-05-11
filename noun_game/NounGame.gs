@@ -102,6 +102,7 @@ function onOpen() {
     .addItem('Importera från Ordbank (Dokument 1)', 'importeraFranOrdbank')
     .addSeparator()
     .addItem('Berika med genus via SALDO',          'berikaMedSaldoGenus')
+    .addItem('Återställ SALDO-checkpoint',          'aterstellSaldoCheckpoint')
     .addItem('Testa SALDO för ett ord',             'testSaldoOrd')
     .addToUi();
 }
@@ -361,6 +362,10 @@ function tolkaSaldoDeklination_(paradigm) {
  * Fyller i genus, deklination och saldo_paradigm för ord utan genus
  * i Ordlistan via SALDO-uppslag.
  */
+var SALDO_CHECKPOINT_KEY = 'saldo_berika_startrad';
+// Tidsgräns i ms — stannar 60 s innan Apps Scripts 30-minutersgräns
+var SALDO_TIDSGRANS_MS   = 29 * 60 * 1000;
+
 function berikaMedSaldoGenus() {
   var ss    = SpreadsheetApp.getActive();
   var sheet = ss.getSheetByName('Ordlista');
@@ -382,16 +387,31 @@ function berikaMedSaldoGenus() {
     return;
   }
 
-  var data        = sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).getValues();
+  var props     = PropertiesService.getScriptProperties();
+  var startRad  = parseInt(props.getProperty(SALDO_CHECKPOINT_KEY) || '0', 10);
+  var data      = sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).getValues();
+  var totalt    = data.length;
+  var startTid  = Date.now();
   var uppdaterade = 0, ejHittade = 0;
 
-  for (var i = 0; i < data.length; i++) {
+  for (var i = startRad; i < totalt; i++) {
+    if (Date.now() - startTid > SALDO_TIDSGRANS_MS) {
+      props.setProperty(SALDO_CHECKPOINT_KEY, String(i));
+      ss.toast(
+        'Pausad vid rad ' + (i + 2) + ' av ' + (totalt + 1) + '.' +
+        '\nGenus ifyllt: ' + uppdaterade + '   Ej hittade: ' + ejHittade +
+        '\nKör "Berika med genus via SALDO" igen för att fortsätta.',
+        'SALDO-berikning pausad', 15
+      );
+      return;
+    }
+
     var ord      = (data[i][ordIdx]   || '').toString().trim().toLowerCase();
     var harGenus = (data[i][genusIdx] || '').toString().trim();
     if (!ord || harGenus === 'en' || harGenus === 'ett') continue;
 
-    if (i % 15 === 0 && i > 0) {
-      SpreadsheetApp.getActive().toast('Bearbetar rad ' + (i + 2) + '…', 'SALDO', 2);
+    if (i % 15 === 0 && i > startRad) {
+      ss.toast('Bearbetar rad ' + (i + 2) + ' av ' + (totalt + 1) + '…', 'SALDO', 2);
     }
     Utilities.sleep(200);
 
@@ -413,8 +433,15 @@ function berikaMedSaldoGenus() {
     }
   }
 
-  SpreadsheetApp.getActive().toast(
+  // Alla rader klara — rensa checkpoint
+  props.deleteProperty(SALDO_CHECKPOINT_KEY);
+  ss.toast(
     'Genus ifyllt: ' + uppdaterade + '   Ej hittade / okänt genus: ' + ejHittade,
-    'SALDO-berikning klar', 8
+    'SALDO-berikning klar!', 10
   );
+}
+
+function aterstellSaldoCheckpoint() {
+  PropertiesService.getScriptProperties().deleteProperty(SALDO_CHECKPOINT_KEY);
+  SpreadsheetApp.getUi().alert('Checkpoint återställd. Nästa körning börjar från rad 2.');
 }
