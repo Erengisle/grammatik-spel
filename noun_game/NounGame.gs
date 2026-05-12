@@ -343,19 +343,44 @@ function saldoSlaSuppOrd_(word) {
   }
 }
 
-// nn_Xu_* → en   nn_Xn_* → ett
+// nn_2u1_pojke → 'en',  nn_5n_hus → 'ett'
+// Hittar första u/n i segmentet (hanterar variantkoder som 2u1, 3u0 m.fl.)
 function tolkaSaldoGenus_(paradigm) {
   if (!paradigm || paradigm.indexOf('nn_') !== 0) return '';
-  var grp = paradigm.split('_')[1] || '';
-  if (grp.charAt(grp.length - 1) === 'u') return 'en';
-  if (grp.charAt(grp.length - 1) === 'n') return 'ett';
-  return '';
+  var seg = paradigm.split('_')[1] || '';
+  var m = seg.match(/^\d*([un])/);
+  if (!m) return '';
+  return m[1] === 'u' ? 'en' : 'ett';
 }
 
-// nn_1u_* → 1 | nn_2u_* → 2 | nn_3u_* → 3 | nn_4n_* → 4 | nn_5n_* → 5
+// Returnerar grupp 1–5 om paradigmet tillhör standardgrupp, annars ''.
+// Hanterar variantkoder: nn_2u1_pojke → '2', nn_0u_x → ''
 function tolkaSaldoDeklination_(paradigm) {
   if (!paradigm || paradigm.indexOf('nn_') !== 0) return '';
-  return (paradigm.split('_')[1] || '').replace(/[un]$/, '');
+  var m = (paradigm.split('_')[1] || '').match(/^([1-5])/);
+  return m ? m[1] : '';
+}
+
+// Regelbaserad fallback när SALDO inte ger grupp 1–5.
+// Täcker de vanligaste mönstren i svenska; lämnar öppet för tveksamma fall.
+function regelBaserdDeklination_(ord, genus) {
+  ord = (ord || '').toLowerCase().trim();
+  if (!ord || !genus) return '';
+
+  if (genus === 'ett') {
+    // Slutar på vokal → dekl 4 (äpple/äpplen, hjärta/hjärtan, embryo/embryon)
+    if (/[aeiouyåäö]$/.test(ord)) return '4';
+    // Slutar på konsonant → dekl 5 (hus/hus, barn/barn, brev/brev)
+    return '5';
+  }
+
+  // en-ord
+  if (/a$/.test(ord))                    return '1'; // flicka/flickor, blomma/blommor
+  if (/(are|ande|ende)$/.test(ord))      return '5'; // lärare/lärare, löpande/löpande
+  if (/(het|else|tion|sion|nad)$/.test(ord)) return '3'; // frihet/friheter, nation/nationer
+  if (/ing$/.test(ord))                  return '2'; // tidning/tidningar
+  // Övriga en-ord: lämna tomt (dekl 2 och 3 går inte att skilja utan pluralform)
+  return '';
 }
 
 /**
@@ -420,16 +445,21 @@ function berikaMedSaldoGenus() {
     var res = saldoSlaSuppOrd_(ord);
 
     if (res.hittad && res.ordklass === 'substantiv') {
-      var genus = tolkaSaldoGenus_(res.paradigm);
-      var dekl  = tolkaSaldoDeklination_(res.paradigm);
+      var genus = tolkaSaldoGenus_(res.paradigm) || harGenus;
+      var dekl  = tolkaSaldoDeklination_(res.paradigm) || regelBaserdDeklination_(ord, genus);
       if (genus) {
         if (!harGenus) sheet.getRange(i + 2, genusIdx + 1).setValue(genus);
-        if (paradigmIdx >= 0) sheet.getRange(i + 2, paradigmIdx + 1).setValue(res.paradigm);
-        if (deklIdx    >= 0) sheet.getRange(i + 2, deklIdx    + 1).setValue(dekl);
+        if (paradigmIdx >= 0 && res.paradigm) sheet.getRange(i + 2, paradigmIdx + 1).setValue(res.paradigm);
+        if (deklIdx >= 0 && dekl) sheet.getRange(i + 2, deklIdx + 1).setValue(dekl);
         uppdaterade++;
       } else {
         ejHittade++;
       }
+    } else if (harGenus === 'en' || harGenus === 'ett') {
+      // Inte hittat i SALDO men genus finns — försök regelbaserad deklination
+      var dekl = regelBaserdDeklination_(ord, harGenus);
+      if (deklIdx >= 0 && dekl) sheet.getRange(i + 2, deklIdx + 1).setValue(dekl);
+      if (dekl) uppdaterade++; else ejHittade++;
     } else {
       ejHittade++;
     }
