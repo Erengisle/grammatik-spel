@@ -443,10 +443,11 @@ function berikaMedSaldoGenus() {
     Utilities.sleep(200);
 
     var res = saldoSlaSuppOrd_(ord);
+    var genus, dekl;
 
     if (res.hittad && res.ordklass === 'substantiv') {
-      var genus = tolkaSaldoGenus_(res.paradigm) || harGenus;
-      var dekl  = tolkaSaldoDeklination_(res.paradigm) || regelBaserdDeklination_(ord, genus);
+      genus = tolkaSaldoGenus_(res.paradigm) || harGenus;
+      dekl  = tolkaSaldoDeklination_(res.paradigm) || regelBaserdDeklination_(ord, genus);
       if (genus) {
         if (!harGenus) sheet.getRange(i + 2, genusIdx + 1).setValue(genus);
         if (paradigmIdx >= 0 && res.paradigm) sheet.getRange(i + 2, paradigmIdx + 1).setValue(res.paradigm);
@@ -456,8 +457,7 @@ function berikaMedSaldoGenus() {
         ejHittade++;
       }
     } else if (harGenus === 'en' || harGenus === 'ett') {
-      // Inte hittat i SALDO men genus finns — försök regelbaserad deklination
-      var dekl = regelBaserdDeklination_(ord, harGenus);
+      dekl = regelBaserdDeklination_(ord, harGenus);
       if (deklIdx >= 0 && dekl) sheet.getRange(i + 2, deklIdx + 1).setValue(dekl);
       if (dekl) uppdaterade++; else ejHittade++;
     } else {
