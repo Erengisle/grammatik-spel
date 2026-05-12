@@ -408,7 +408,9 @@ function berikaMedSaldoGenus() {
 
     var ord      = (data[i][ordIdx]   || '').toString().trim().toLowerCase();
     var harGenus = (data[i][genusIdx] || '').toString().trim();
-    if (!ord || harGenus === 'en' || harGenus === 'ett') continue;
+    var harDekl  = deklIdx >= 0 ? (data[i][deklIdx] || '').toString().trim() : '?';
+    // Hoppa bara om BÅDE genus och deklination är klara
+    if (!ord || ((harGenus === 'en' || harGenus === 'ett') && harDekl)) continue;
 
     if (i % 15 === 0 && i > startRad) {
       ss.toast('Bearbetar rad ' + (i + 2) + ' av ' + (totalt + 1) + '…', 'SALDO', 2);
@@ -421,7 +423,7 @@ function berikaMedSaldoGenus() {
       var genus = tolkaSaldoGenus_(res.paradigm);
       var dekl  = tolkaSaldoDeklination_(res.paradigm);
       if (genus) {
-        sheet.getRange(i + 2, genusIdx + 1).setValue(genus);
+        if (!harGenus) sheet.getRange(i + 2, genusIdx + 1).setValue(genus);
         if (paradigmIdx >= 0) sheet.getRange(i + 2, paradigmIdx + 1).setValue(res.paradigm);
         if (deklIdx    >= 0) sheet.getRange(i + 2, deklIdx    + 1).setValue(dekl);
         uppdaterade++;
